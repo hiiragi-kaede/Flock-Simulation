@@ -676,11 +676,11 @@ MonoBehaviour:
   BackGround: {fileID: 1707694269}
   Bird: {fileID: 2462784659365745585, guid: 552a2dcbaf39e834f88453a1a0c39e78, type: 3}
   FlockSize: 32
-  Sep: 1
+  Sep: 5
   Align: 1
-  Coh: 1
-  MaxSpeed: 2
-  DistThreshold: 10
+  Coh: 0.5
+  MaxSpeed: 5
+  DistThreshold: 3
   sepText: {fileID: 1353083645}
   aliText: {fileID: 1929902037}
   cohText: {fileID: 457106117}
@@ -793,7 +793,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2034012256
 MonoBehaviour:
   m_ObjectHideFlags: 0

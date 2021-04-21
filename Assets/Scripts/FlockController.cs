@@ -52,15 +52,15 @@ public class FlockController : MonoBehaviour
                                       Random.Range(-1 * BackGroundSize, BackGroundSize),
                                       0);
 
-            Vector3 dir = new Vector3(Random.Range(-0.1f, 0.1f),
-                                      Random.Range(-0.1f, 0.1f),
-                                      0);
+            //Vector3 dir = new Vector3(Random.Range(-0.1f, 0.1f),
+            //                          Random.Range(-0.1f, 0.1f),
+            //                          0);
 
             GameObject obj = Instantiate(Bird, pos, Quaternion.identity);
             BirdList.Add(obj);
-            VeloList.Add(dir);
+            VeloList.Add(Vector3.zero);
             oldpos.Add(pos);
-            oldvelo.Add(dir);
+            oldvelo.Add(Vector3.zero);
         }
         Flocks = BirdList.ToArray();
         FlocksVelocitys = VeloList.ToArray();
@@ -87,12 +87,12 @@ public class FlockController : MonoBehaviour
                 {
                     vec += diff / diff.sqrMagnitude;
                 }
-                else
-                {
-                    vec += new Vector3(Random.Range(-5f,5f),
-                                       Random.Range(-5f,5f),
-                                       0);
-                }
+                //else
+                //{
+                //    vec += new Vector3(Random.Range(-5f,5f),
+                //                       Random.Range(-5f,5f),
+                //                       0);
+                //}
                 
             }
                 
@@ -114,7 +114,7 @@ public class FlockController : MonoBehaviour
             vel += OldVelo[i];
         }
         vel /= (Flocks.Length - 1);
-        return (vel - OldVelo[idx])/8;
+        return (vel - OldVelo[idx]);
     }
 
     /// <summary>
@@ -163,7 +163,7 @@ public class FlockController : MonoBehaviour
 
             Vector3 dest = Flocks[i].transform.position + FlocksVelocitys[i] * Time.deltaTime;
             //移動先がマップ外なら、右もしくは左に直角に曲がる
-            if(dest.x < -1 * BackGroundSize ||  dest.x > BackGroundSize ||
+            if (dest.x < -1 * BackGroundSize || dest.x > BackGroundSize ||
                 dest.y < -1 * BackGroundSize || dest.y > BackGroundSize)
             {
                 float swap = FlocksVelocitys[i].x;
@@ -182,9 +182,9 @@ public class FlockController : MonoBehaviour
 
         }
 
-        sepAve *= 1 << 9;
-        aliAve *= 1 << 9;
-        cohAve *= 1 << 9;
+        sepAve *= Mathf.Pow(10,9);
+        aliAve *= Mathf.Pow(10, 9);
+        cohAve *= Mathf.Pow(10, 9);
         sepText.text = "sep:" + sepAve.ToString("F3");
         aliText.text = "ali:" + aliAve.ToString("F3");
         cohText.text = "coh:" + cohAve.ToString("F3");
