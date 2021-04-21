@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class FlockController : MonoBehaviour
 {
@@ -10,18 +11,19 @@ public class FlockController : MonoBehaviour
     public GameObject Bird;
     [Tooltip("群れの頭数")]
     public int FlockSize = 16;
-    [Tooltip("分離の重み付け係数")]
+    [Tooltip("近すぎる仲間を避ける重み付け係数")]
     public float Sep = 1f;
-    [Tooltip("整列の重み付け係数")]
+    [Tooltip("仲間に速度を合わせる重み付け係数")]
     public float Align = 1f;
-    [Tooltip("結合の重み付け係数")]
+    [Tooltip("群れの中心に移動しようとする重み付け係数")]
     public float Coh = 1f;
     [Tooltip("速度上限")]
     public float MaxSpeed = 5f;
-    [Tooltip("中心に近づく強さ。小さいほど引き寄せられる")]
-    public float CenterPullFactor = 300;
     [Tooltip("近づきすぎると離れるときの距離のしきい値")]
     public float DistThreshold = 10f;
+    public Text sepText;
+    public Text aliText;
+    public Text cohText;
 
 
     //群れの初期位置を設定するときに範囲指定で使用する
@@ -79,9 +81,19 @@ public class FlockController : MonoBehaviour
         {
             if (i == idx) continue;
             Vector3 diff = OldPos[idx] - OldPos[i];
-            if (diff.magnitude < DistThreshold)
+            if (diff.sqrMagnitude < Mathf.Pow( DistThreshold ,2) )
             {
-                vec += diff;
+                if(diff.sqrMagnitude != 0)
+                {
+                    vec += diff / diff.sqrMagnitude;
+                }
+                else
+                {
+                    vec += new Vector3(Random.Range(-5f,5f),
+                                       Random.Range(-5f,5f),
+                                       0);
+                }
+                
             }
                 
         }
@@ -102,7 +114,7 @@ public class FlockController : MonoBehaviour
             vel += OldVelo[i];
         }
         vel /= (Flocks.Length - 1);
-        return (vel - OldVelo[idx])/2;
+        return (vel - OldVelo[idx])/8;
     }
 
     /// <summary>
@@ -119,37 +131,68 @@ public class FlockController : MonoBehaviour
             pos += OldPos[i];
         }
         pos /= (Flocks.Length - 1);
-        return (pos - OldPos[idx])/CenterPullFactor;
+        return (pos - OldPos[idx]);
     }
     
     // Update is called once per frame
     void Update()
     {
+        Vector3 sepAve = Vector3.zero;
+        Vector3 aliAve = Vector3.zero;
+        Vector3 cohAve = Vector3.zero;
+
         for(int i=0; i<Flocks.Length; i++)
         {
+            //Debug.Log("Bird" + i);
             Vector3 acceralation = Sep * Separation(i) + Align * Alignment(i) + Coh * Cohension(i);
-            //Debug.Log(Separation(i));
-            //Debug.Log(Alignment(i));
-            //Debug.Log(Cohension(i));
+            sepAve += Separation(i);
+            aliAve += Alignment(i);
+            cohAve += Cohension(i);
+
+            //Debug.Log("sep:"+Separation(i));
+            //Debug.Log("ali:"+Alignment(i));
+            //Debug.Log("coh:"+Cohension(i));
 
             //Debug.Log("Acc:" + acceralation);
             FlocksVelocitys[i] += acceralation * Time.deltaTime;
-            FlocksVelocitys[i].x = Mathf.Clamp(FlocksVelocitys[i].x, -1 * MaxSpeed, MaxSpeed);
-            FlocksVelocitys[i].y = Mathf.Clamp(FlocksVelocitys[i].y, -1 * MaxSpeed, MaxSpeed);
-            Vector3 tmp = Flocks[i].transform.position;
-            //Debug.Log(FlocksVelocitys[i]);
-            tmp += FlocksVelocitys[i];
+            if(FlocksVelocitys[i].magnitude > MaxSpeed)
+            {
+                FlocksVelocitys[i] /= FlocksVelocitys[i].magnitude;
+                FlocksVelocitys[i] *= MaxSpeed;
+            }
+
+            Vector3 dest = Flocks[i].transform.position + FlocksVelocitys[i] * Time.deltaTime;
+            //移動先がマップ外なら、右もしくは左に直角に曲がる
+            if(dest.x < -1 * BackGroundSize ||  dest.x > BackGroundSize ||
+                dest.y < -1 * BackGroundSize || dest.y > BackGroundSize)
+            {
+                float swap = FlocksVelocitys[i].x;
+                FlocksVelocitys[i].x = FlocksVelocitys[i].y;
+                FlocksVelocitys[i].y = swap;
+
+                float rnd = Random.Range(0, 1);
+                if (rnd > 0.5f) FlocksVelocitys[i].x *= -1;
+                else FlocksVelocitys[i].y *= -1;
+            }
+
+            Vector3 tmp = Flocks[i].transform.position + FlocksVelocitys[i];
             float x = Mathf.Clamp(tmp.x, -1 * BackGroundSize, BackGroundSize);
             float y = Mathf.Clamp(tmp.y, -1 * BackGroundSize, BackGroundSize);
             Flocks[i].transform.position = new Vector3(x,y,0);
 
-            OldPos[i] = Flocks[i].transform.position;
-            OldVelo[i] = FlocksVelocitys[i];
         }
 
-        for(int i=0; i<Flocks.Length; i++)
+        sepAve *= 1 << 9;
+        aliAve *= 1 << 9;
+        cohAve *= 1 << 9;
+        sepText.text = "sep:" + sepAve.ToString("F3");
+        aliText.text = "ali:" + aliAve.ToString("F3");
+        cohText.text = "coh:" + cohAve.ToString("F3");
+
+        for (int i=0; i<Flocks.Length; i++)
         {
-            
+            OldPos[i] = Flocks[i].transform.position;
+            OldVelo[i] = FlocksVelocitys[i];
         }
     }
 }
