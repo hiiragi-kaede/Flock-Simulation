@@ -21,9 +21,9 @@ public class FlockController : MonoBehaviour
     public float MaxSpeed = 5f;
     [Tooltip("近づきすぎると離れるときの距離のしきい値")]
     public float DistThreshold = 10f;
-    public Text sepText;
-    public Text aliText;
-    public Text cohText;
+    //public Text sepText;
+    //public Text aliText;
+    //public Text cohText;
 
 
     //群れの初期位置を設定するときに範囲指定で使用する
@@ -181,13 +181,6 @@ public class FlockController : MonoBehaviour
             Flocks[i].transform.position = new Vector3(x,y,0);
 
         }
-
-        sepAve *= Mathf.Pow(10,9);
-        aliAve *= Mathf.Pow(10, 9);
-        cohAve *= Mathf.Pow(10, 9);
-        sepText.text = "sep:" + sepAve.ToString("F3");
-        aliText.text = "ali:" + aliAve.ToString("F3");
-        cohText.text = "coh:" + cohAve.ToString("F3");
 
         for (int i=0; i<Flocks.Length; i++)
         {
