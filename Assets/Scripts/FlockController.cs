@@ -39,7 +39,7 @@ public class FlockController : MonoBehaviour
         if (BackGround is null) return;
         if (Bird is null) return;
 
-        BackGroundSize = BackGround.transform.localScale.x/2;
+        BackGroundSize = (BackGround.transform.localScale.x - 1) / 2;
         //Debug.Log(BackGroundSize);
 
         List<GameObject> BirdList = new List<GameObject>();
@@ -52,15 +52,15 @@ public class FlockController : MonoBehaviour
                                       Random.Range(-1 * BackGroundSize, BackGroundSize),
                                       0);
 
-            //Vector3 dir = new Vector3(Random.Range(-0.1f, 0.1f),
-            //                          Random.Range(-0.1f, 0.1f),
-            //                          0);
+            Vector3 dir = new Vector3(Random.Range(-0.1f, 0.1f),
+                                      Random.Range(-0.1f, 0.1f),
+                                      0);
 
             GameObject obj = Instantiate(Bird, pos, Quaternion.identity);
             BirdList.Add(obj);
-            VeloList.Add(Vector3.zero);
+            VeloList.Add(dir);
             oldpos.Add(pos);
-            oldvelo.Add(Vector3.zero);
+            oldvelo.Add(dir);
         }
         Flocks = BirdList.ToArray();
         FlocksVelocitys = VeloList.ToArray();
@@ -87,13 +87,7 @@ public class FlockController : MonoBehaviour
                 {
                     vec += diff / diff.sqrMagnitude;
                 }
-                //else
-                //{
-                //    vec += new Vector3(Random.Range(-5f,5f),
-                //                       Random.Range(-5f,5f),
-                //                       0);
-                //}
-                
+
             }
                 
         }
@@ -108,12 +102,21 @@ public class FlockController : MonoBehaviour
     Vector3 Alignment(int idx)
     {
         Vector3 vel = Vector3.zero;
+        int cnt = 0;
+
         for (int i = 0; i < Flocks.Length; i++)
         {
             if (i == idx) continue;
-            vel += OldVelo[i];
+            Vector3 diff = OldPos[idx] - OldPos[i];
+            if (diff.sqrMagnitude < Mathf.Pow(DistThreshold, 2))
+            {
+                vel += OldVelo[i];
+                cnt++;
+            }
+                
         }
-        vel /= (Flocks.Length - 1);
+        if(cnt!=0)
+            vel /= cnt;
         return (vel - OldVelo[idx]);
     }
 
@@ -125,12 +128,21 @@ public class FlockController : MonoBehaviour
     Vector3 Cohension(int idx)
     {
         Vector3 pos = Vector3.zero;
+        int cnt = 0;
+
         for (int i = 0; i < Flocks.Length; i++)
         {
             if (i == idx) continue;
-            pos += OldPos[i];
+            Vector3 diff = OldPos[idx] - OldPos[i];
+            if (diff.sqrMagnitude < Mathf.Pow(DistThreshold, 2))
+            {
+                pos += OldPos[i];
+                cnt++;
+            }
+                
         }
-        pos /= (Flocks.Length - 1);
+        if(cnt!=0)
+            pos /= cnt;
         return (pos - OldPos[idx]);
     }
     
@@ -154,12 +166,11 @@ public class FlockController : MonoBehaviour
             //Debug.Log("coh:"+Cohension(i));
 
             //Debug.Log("Acc:" + acceralation);
-            FlocksVelocitys[i] += acceralation * Time.deltaTime;
-            if(FlocksVelocitys[i].magnitude > MaxSpeed)
-            {
-                FlocksVelocitys[i] /= FlocksVelocitys[i].magnitude;
-                FlocksVelocitys[i] *= MaxSpeed;
-            }
+            Vector3 noise = new Vector3(Random.Range(-1f, 1f),
+                                      Random.Range(-1f, 1f),
+                                      0);
+
+            FlocksVelocitys[i] += (acceralation + noise) * Time.deltaTime;
 
             Vector3 dest = Flocks[i].transform.position + FlocksVelocitys[i] * Time.deltaTime;
             //移動先がマップ外なら、右もしくは左に直角に曲がる
@@ -173,6 +184,12 @@ public class FlockController : MonoBehaviour
                 float rnd = Random.Range(0, 1);
                 if (rnd > 0.5f) FlocksVelocitys[i].x *= -1;
                 else FlocksVelocitys[i].y *= -1;
+            }
+
+            if (FlocksVelocitys[i].magnitude > MaxSpeed)
+            {
+                FlocksVelocitys[i] /= FlocksVelocitys[i].magnitude;
+                FlocksVelocitys[i] *= MaxSpeed;
             }
 
             Vector3 tmp = Flocks[i].transform.position + FlocksVelocitys[i];

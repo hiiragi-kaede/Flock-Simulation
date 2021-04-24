@@ -16,12 +16,12 @@ public class DebugViewer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        FlockSize.text = "size:" + fk.FlockSize.ToString();
-        Sep.text = "separation:" + fk.Sep.ToString();
-        Ali.text = "alignment:" + fk.Align.ToString();
-        Coh.text = "cohension:" + fk.Coh.ToString();
-        MaxSpeed.text = "maxSpeed:" + fk.MaxSpeed.ToString();
-        DistThreshold.text = "distance:" + fk.DistThreshold.ToString();   
+        FlockSize.text = "群れの大きさ:" + fk.FlockSize.ToString();
+        Sep.text = "分離度:" + fk.Sep.ToString();
+        Ali.text = "整列度:" + fk.Align.ToString();
+        Coh.text = "結合度:" + fk.Coh.ToString();
+        MaxSpeed.text = "速度上限:" + fk.MaxSpeed.ToString();
+        DistThreshold.text = "感知距離:" + fk.DistThreshold.ToString();   
     }
 
     // Update is called once per frame
