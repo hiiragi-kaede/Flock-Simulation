@@ -21,10 +21,6 @@ public class FlockController : MonoBehaviour
     public float MaxSpeed = 5f;
     [Tooltip("近づきすぎると離れるときの距離のしきい値")]
     public float DistThreshold = 10f;
-    //public Text sepText;
-    //public Text aliText;
-    //public Text cohText;
-
 
     //群れの初期位置を設定するときに範囲指定で使用する
     private float BackGroundSize;

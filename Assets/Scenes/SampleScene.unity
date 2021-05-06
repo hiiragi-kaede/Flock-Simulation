@@ -955,7 +955,7 @@ MonoBehaviour:
   BackGround: {fileID: 1707694269}
   Bird: {fileID: 2462784659365745585, guid: 552a2dcbaf39e834f88453a1a0c39e78, type: 3}
   FlockSize: 100
-  Sep: 5
+  Sep: 6
   Align: 1
   Coh: 1
   MaxSpeed: 0.3
