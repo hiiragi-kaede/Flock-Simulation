@@ -21,12 +21,12 @@ public class DebugViewer : MonoBehaviour
         Ali.text = "整列度:" + fk.Align.ToString();
         Coh.text = "結合度:" + fk.Coh.ToString();
         MaxSpeed.text = "速度上限:" + fk.MaxSpeed.ToString();
-        DistThreshold.text = "感知距離:" + fk.DistThreshold.ToString();   
+        DistThreshold.text = "感知距離:" + fk.DistThreshold.ToString();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }
