@@ -39,6 +39,19 @@ public class FlockController : MonoBehaviour
         BackGroundSize = (BackGround.transform.localScale.x - 1) / 2;
         //Debug.Log(BackGroundSize);
 
+        Flocks = new List<GameObject>();
+        FlocksVelocitys = new List<Vector3>();
+        OldPos = new List<Vector3>();
+        OldVelo = new List<Vector3>();
+
+        for(int i=0; i<FlockSize; i++)
+        {
+            IncrementFlock();
+        }
+    }
+
+    void IncrementFlock()
+    {
         Vector3 pos = new Vector3(Random.Range(-1 * BackGroundSize, BackGroundSize),
                                       Random.Range(-1 * BackGroundSize, BackGroundSize),
                                       0);
@@ -49,15 +62,19 @@ public class FlockController : MonoBehaviour
 
         GameObject obj = Instantiate(Bird, pos, Quaternion.identity);
 
-        Flocks = new List<GameObject>();
-        FlocksVelocitys = new List<Vector3>();
-        OldPos = new List<Vector3>();
-        OldVelo = new List<Vector3>();
-
         Flocks.Add(obj);
         FlocksVelocitys.Add(dir);
         OldPos.Add(pos);
         OldVelo.Add(dir);
+    }
+
+    void DecrementFlock()
+    {
+        GameObject.Destroy(Flocks[Flocks.Count - 1]);
+        Flocks.RemoveAt(Flocks.Count - 1);
+        FlocksVelocitys.RemoveAt(FlocksVelocitys.Count - 1);
+        OldPos.RemoveAt(OldPos.Count - 1);
+        OldVelo.RemoveAt(OldVelo.Count - 1);
     }
 
     /// <summary>
@@ -142,27 +159,11 @@ public class FlockController : MonoBehaviour
     {
         if(Flocks.Count<FlockSize) //群れのサイズに到達していなければ群れを増やす
         {
-            Vector3 pos = new Vector3(Random.Range(-1 * BackGroundSize, BackGroundSize),
-                                      Random.Range(-1 * BackGroundSize, BackGroundSize),
-                                      0);
-
-            Vector3 dir = new Vector3(Random.Range(-0.1f, 0.1f),
-                                      Random.Range(-0.1f, 0.1f),
-                                      0);
-
-            GameObject obj = Instantiate(Bird, pos, Quaternion.identity);
-            Flocks.Add(obj);
-            FlocksVelocitys.Add(dir);
-            OldPos.Add(pos);
-            OldVelo.Add(dir);
+            IncrementFlock();
         }
         else if (Flocks.Count > FlockSize)
         {
-            GameObject.Destroy(Flocks[Flocks.Count - 1]);
-            Flocks.RemoveAt(Flocks.Count - 1);
-            FlocksVelocitys.RemoveAt(FlocksVelocitys.Count - 1);
-            OldPos.RemoveAt(OldPos.Count - 1);
-            OldVelo.RemoveAt(OldVelo.Count - 1);
+            DecrementFlock();
         }
 
         for (int i=0; i<Flocks.Count; i++)
