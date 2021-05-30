@@ -199,7 +199,18 @@ public class FlockController : MonoBehaviour
             Vector3 tmp = Flocks[i].transform.position + FlocksVelocitys[i];
             float x = Mathf.Clamp(tmp.x, -1 * BackGroundSize, BackGroundSize);
             float y = Mathf.Clamp(tmp.y, -1 * BackGroundSize, BackGroundSize);
+
+            //Flocks[i].transform.LookAt(new Vector3(x, y, 0), Vector3.up);
             Flocks[i].transform.position = new Vector3(x,y,0);
+
+            float cos = FlocksVelocitys[i].magnitude * 1000 / FlocksVelocitys[i].x * 1000;
+            cos = Mathf.Clamp(cos, -1f, 1f);
+            float rotateArg = (FlocksVelocitys[i].x != 0) ?
+                                Mathf.Acos(cos) :
+                                0;
+            if (Mathf.Abs(rotateArg) > 0.01)
+                Flocks[i].transform.rotation *= Quaternion.Euler(0, 0, rotateArg);
+
 
         }
 
