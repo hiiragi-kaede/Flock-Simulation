@@ -10,6 +10,7 @@ public class FlockController : MonoBehaviour
     [Tooltip("群れの一体のプレハブ")]
     public GameObject Bird;
     [Tooltip("群れの頭数")]
+    [Range(10,300)]
     public int FlockSize = 16;
     [Tooltip("近すぎる仲間を避ける重み付け係数")]
     public float Sep = 1f;
@@ -24,10 +25,10 @@ public class FlockController : MonoBehaviour
 
     //群れの初期位置を設定するときに範囲指定で使用する
     private float BackGroundSize;
-    private GameObject[] Flocks;
-    private Vector3[] FlocksVelocitys;
-    private Vector3[] OldPos;
-    private Vector3[] OldVelo;
+    private List<GameObject> Flocks;
+    private List<Vector3> FlocksVelocitys;
+    private List<Vector3> OldPos;
+    private List<Vector3> OldVelo;
 
 
     void Start()
@@ -38,31 +39,42 @@ public class FlockController : MonoBehaviour
         BackGroundSize = (BackGround.transform.localScale.x - 1) / 2;
         //Debug.Log(BackGroundSize);
 
-        List<GameObject> BirdList = new List<GameObject>();
-        List<Vector3> VeloList = new List<Vector3>();
-        List<Vector3> oldpos = new List<Vector3>();
-        List<Vector3> oldvelo = new List<Vector3>();
+        Flocks = new List<GameObject>();
+        FlocksVelocitys = new List<Vector3>();
+        OldPos = new List<Vector3>();
+        OldVelo = new List<Vector3>();
+
         for(int i=0; i<FlockSize; i++)
         {
-            Vector3 pos = new Vector3(Random.Range(-1 * BackGroundSize, BackGroundSize),
+            IncrementFlock();
+        }
+    }
+
+    void IncrementFlock()
+    {
+        Vector3 pos = new Vector3(Random.Range(-1 * BackGroundSize, BackGroundSize),
                                       Random.Range(-1 * BackGroundSize, BackGroundSize),
                                       0);
 
-            Vector3 dir = new Vector3(Random.Range(-0.1f, 0.1f),
-                                      Random.Range(-0.1f, 0.1f),
-                                      0);
+        Vector3 dir = new Vector3(Random.Range(-0.1f, 0.1f),
+                                  Random.Range(-0.1f, 0.1f),
+                                  0);
 
-            GameObject obj = Instantiate(Bird, pos, Quaternion.identity);
-            BirdList.Add(obj);
-            VeloList.Add(dir);
-            oldpos.Add(pos);
-            oldvelo.Add(dir);
-        }
-        Flocks = BirdList.ToArray();
-        FlocksVelocitys = VeloList.ToArray();
-        OldPos = oldpos.ToArray();
-        OldVelo = oldvelo.ToArray();
+        GameObject obj = Instantiate(Bird, pos, Quaternion.identity);
 
+        Flocks.Add(obj);
+        FlocksVelocitys.Add(dir);
+        OldPos.Add(pos);
+        OldVelo.Add(dir);
+    }
+
+    void DecrementFlock()
+    {
+        GameObject.Destroy(Flocks[Flocks.Count - 1]);
+        Flocks.RemoveAt(Flocks.Count - 1);
+        FlocksVelocitys.RemoveAt(FlocksVelocitys.Count - 1);
+        OldPos.RemoveAt(OldPos.Count - 1);
+        OldVelo.RemoveAt(OldVelo.Count - 1);
     }
 
     /// <summary>
@@ -73,7 +85,7 @@ public class FlockController : MonoBehaviour
     Vector3 Separation(int idx)
     {
         Vector3 vec = Vector3.zero;
-        for(int i=0; i<Flocks.Length; i++)
+        for(int i=0; i<Flocks.Count; i++)
         {
             if (i == idx) continue;
             Vector3 diff = OldPos[idx] - OldPos[i];
@@ -87,7 +99,7 @@ public class FlockController : MonoBehaviour
             }
                 
         }
-        return vec / (Flocks.Length - 1);
+        return vec / (Flocks.Count - 1);
     }
 
     /// <summary>
@@ -100,7 +112,7 @@ public class FlockController : MonoBehaviour
         Vector3 vel = Vector3.zero;
         int cnt = 0;
 
-        for (int i = 0; i < Flocks.Length; i++)
+        for (int i = 0; i < Flocks.Count; i++)
         {
             if (i == idx) continue;
             Vector3 diff = OldPos[idx] - OldPos[i];
@@ -126,7 +138,7 @@ public class FlockController : MonoBehaviour
         Vector3 pos = Vector3.zero;
         int cnt = 0;
 
-        for (int i = 0; i < Flocks.Length; i++)
+        for (int i = 0; i < Flocks.Count; i++)
         {
             if (i == idx) continue;
             Vector3 diff = OldPos[idx] - OldPos[i];
@@ -145,23 +157,20 @@ public class FlockController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 sepAve = Vector3.zero;
-        Vector3 aliAve = Vector3.zero;
-        Vector3 cohAve = Vector3.zero;
+        if(Flocks.Count<FlockSize) //群れのサイズに到達していなければ群れを増やす
+        {
+            IncrementFlock();
+        }
+        else if (Flocks.Count > FlockSize)
+        {
+            DecrementFlock();
+        }
 
-        for(int i=0; i<Flocks.Length; i++)
+        for (int i=0; i<Flocks.Count; i++)
         {
             //Debug.Log("Bird" + i);
             Vector3 acceralation = Sep * Separation(i) + Align * Alignment(i) + Coh * Cohension(i);
-            sepAve += Separation(i);
-            aliAve += Alignment(i);
-            cohAve += Cohension(i);
 
-            //Debug.Log("sep:"+Separation(i));
-            //Debug.Log("ali:"+Alignment(i));
-            //Debug.Log("coh:"+Cohension(i));
-
-            //Debug.Log("Acc:" + acceralation);
             Vector3 noise = new Vector3(Random.Range(-1f, 1f),
                                       Random.Range(-1f, 1f),
                                       0);
@@ -173,13 +182,12 @@ public class FlockController : MonoBehaviour
             if (dest.x < -1 * BackGroundSize || dest.x > BackGroundSize ||
                 dest.y < -1 * BackGroundSize || dest.y > BackGroundSize)
             {
-                float swap = FlocksVelocitys[i].x;
-                FlocksVelocitys[i].x = FlocksVelocitys[i].y;
-                FlocksVelocitys[i].y = swap;
+                Vector3 swap = new Vector3(FlocksVelocitys[i].y, FlocksVelocitys[i].x, 0);
+                FlocksVelocitys[i] = swap;
 
                 float rnd = Random.Range(0, 1);
-                if (rnd > 0.5f) FlocksVelocitys[i].x *= -1;
-                else FlocksVelocitys[i].y *= -1;
+                if (rnd > 0.5f) FlocksVelocitys[i] = new Vector3(FlocksVelocitys[i].x * (-1), FlocksVelocitys[i].y, 0);
+                else FlocksVelocitys[i] = new Vector3(FlocksVelocitys[i].x, FlocksVelocitys[i].y * (-1), 0);
             }
 
             if (FlocksVelocitys[i].magnitude > MaxSpeed)
@@ -191,11 +199,22 @@ public class FlockController : MonoBehaviour
             Vector3 tmp = Flocks[i].transform.position + FlocksVelocitys[i];
             float x = Mathf.Clamp(tmp.x, -1 * BackGroundSize, BackGroundSize);
             float y = Mathf.Clamp(tmp.y, -1 * BackGroundSize, BackGroundSize);
+
+            //Flocks[i].transform.LookAt(new Vector3(x, y, 0), Vector3.up);
             Flocks[i].transform.position = new Vector3(x,y,0);
+
+            float cos = FlocksVelocitys[i].magnitude * 1000 / FlocksVelocitys[i].x * 1000;
+            cos = Mathf.Clamp(cos, -1f, 1f);
+            float rotateArg = (FlocksVelocitys[i].x != 0) ?
+                                Mathf.Acos(cos) :
+                                0;
+            if (Mathf.Abs(rotateArg) > 0.01)
+                Flocks[i].transform.rotation *= Quaternion.Euler(0, 0, rotateArg);
+
 
         }
 
-        for (int i=0; i<Flocks.Length; i++)
+        for (int i=0; i<Flocks.Count; i++)
         {
             OldPos[i] = Flocks[i].transform.position;
             OldVelo[i] = FlocksVelocitys[i];
