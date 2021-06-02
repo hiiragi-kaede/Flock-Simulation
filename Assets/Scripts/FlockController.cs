@@ -6,11 +6,12 @@ using UnityEngine.UI;
 public class FlockController : MonoBehaviour
 {
     // Start is called before the first frame update
+    [Tooltip("群れが動く範囲設定に用いるGameObject。高速化のためにサイズは整数にしてほしい")]
     public GameObject BackGround;
     [Tooltip("群れの一体のプレハブ")]
     public GameObject Bird;
     [Tooltip("群れの頭数")]
-    [Range(10,300)]
+    [Range(10,400)]
     public int FlockSize = 16;
     [Tooltip("近すぎる仲間を避ける重み付け係数")]
     public float Sep = 1f;
@@ -154,6 +155,39 @@ public class FlockController : MonoBehaviour
         return (pos - OldPos[idx]);
     }
     
+    enum Dir
+    {
+        Up,
+        UpRight,
+        Right,
+        DownRight,
+        Down,
+        DownLeft,
+        Left,
+        UpLeft,
+    }
+
+    Dir GetDir(Vector3 velo)
+    {
+        float norm = velo.magnitude;
+        float Rad = Mathf.Acos(Mathf.Clamp(velo.x / norm, -1f, 1f));
+        float sin = Mathf.Clamp(velo.y / norm, -1f, 1f);
+
+        if (sin < 0) Rad *= -1;
+
+        float pi = Mathf.PI;
+
+        if (Rad >= -pi / 8 && Rad < pi / 8) return Dir.Right;
+        else if (Rad >= pi / 8 && Rad < 3 * pi / 8) return Dir.UpRight;
+        else if (Rad >= 3 * pi / 8 && Rad < 5 * pi / 8) return Dir.Up;
+        else if (Rad >= 5 * pi / 8 && Rad < 7 * pi / 8) return Dir.UpLeft;
+        else if (Rad < -pi / 8 && Rad >= -3 * pi / 8) return Dir.DownRight;
+        else if (Rad < -3 * pi / 8 && Rad >= -5 * pi / 8) return Dir.Down;
+        else if (Rad < -5 * pi / 8 && Rad >= -7 * pi / 8) return Dir.DownLeft;
+        else return Dir.Left;
+
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -203,14 +237,13 @@ public class FlockController : MonoBehaviour
             //Flocks[i].transform.LookAt(new Vector3(x, y, 0), Vector3.up);
             Flocks[i].transform.position = new Vector3(x,y,0);
 
-            float cos = FlocksVelocitys[i].magnitude * 1000 / FlocksVelocitys[i].x * 1000;
+            float cos = FlocksVelocitys[i].x * 1000 / FlocksVelocitys[i].magnitude * 1000;
             cos = Mathf.Clamp(cos, -1f, 1f);
             float rotateArg = (FlocksVelocitys[i].x != 0) ?
                                 Mathf.Acos(cos) :
                                 0;
             if (Mathf.Abs(rotateArg) > 0.01)
                 Flocks[i].transform.rotation *= Quaternion.Euler(0, 0, rotateArg);
-
 
         }
 
