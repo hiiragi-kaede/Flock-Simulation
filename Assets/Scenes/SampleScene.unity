@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641234, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -949,7 +949,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BackGround: {fileID: 1707694269}
   Bird: {fileID: 4772536291028773979, guid: bbb1b8b6086569142bef9dfa93d578a5, type: 3}
-  FlockSize: 400
+  FlockSize: 4000
   Sep: 10
   Align: 0.25
   Coh: 0.05

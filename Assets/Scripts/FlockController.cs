@@ -10,7 +10,7 @@ public class FlockController : MonoBehaviour
     [Tooltip("群れの一体のプレハブ")]
     public GameObject Bird;
     [Tooltip("群れの頭数")]
-    [Range(10,400)]
+    [Range(10,4000)]
     public int FlockSize = 16;
     [Tooltip("近すぎる仲間を避ける重み付け係数")]
     public float Sep = 1f;
